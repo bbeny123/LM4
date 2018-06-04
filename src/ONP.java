@@ -1,9 +1,7 @@
-import java.util.Stack;
-
-public class ONP {
+class ONP {
 
     private String result = "";
-    private Stack<String> stack = new Stack<>();
+    private Stack stack = new Stack();
 
     private int getPriority(String s) {
         switch (s) {
@@ -20,11 +18,12 @@ public class ONP {
         }
     }
 
-    public String onp(String s) {
+    String onp(String s) {
+        int q = -1;
         while (!s.isEmpty()) {
             String a = s.substring(0, 1);
             s = s.substring(1, s.length());
-            analyze(a);
+            q = analyze(a, q);
         }
         StringBuilder sb = new StringBuilder();
         while (!stack.isEmpty()) {
@@ -34,10 +33,20 @@ public class ONP {
         return result;
     }
 
-    private void analyze(String a) {
+    private int analyze(String a, int mode) {
+        if ((mode == -1 || mode == 2 || mode == 3) && a.equals("-")) {
+            result += "0";
+        }
+        if ((mode == 1 || mode == 3) && a.equals("(")) {
+            analyze("*");
+        }
+        return analyze(a);
+    }
+
+    private int analyze(String a) {
         if (a.equals("(")) {
             stack.push(a);
-            return;
+            return 2;
         }
 
         if (a.equals(")")) {
@@ -47,21 +56,24 @@ public class ONP {
             }
             stack.pop();
             result += sb.toString();
-            return;
+            return 3;
         }
 
         int newOp = getPriority(a);
         if (newOp == 0) {
             result += a;
-            return;
+            return 1;
         }
 
+        int mode = 0;
         StringBuilder sb = new StringBuilder();
         while (!stack.isEmpty() && newOp <= getPriority(stack.peek())) {
             sb.append(stack.pop());
+            mode = 2;
         }
         stack.push(a);
         result += sb.toString();
+        return mode;
     }
 
 }
